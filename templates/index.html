@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outreach Agent - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Header -->
+        <header class="mb-8">
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">Outreach Agent</h1>
+                <p class="text-gray-600">Automated personalized email outreach powered by AI</p>
+            </div>
+        </header>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Column: Configuration & Execution -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Configuration Card -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Configuration</h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Google Sheets Document ID</label>
+                            <input type="text" id="sheetsDocId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent" placeholder="Enter Google Sheets Document ID">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Google Sheets Sheet ID</label>
+                            <input type="text" id="sheetsSheetId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent" placeholder="Enter Sheet ID (default: 0)">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Google Docs Document ID (Knowledge Base)</label>
+                            <input type="text" id="docsDocId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent" placeholder="Enter Google Docs Document ID">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">SMTP From Email</label>
+                            <input type="email" id="smtpFromEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent" placeholder="your-email@company.com">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">OpenAI Model</label>
+                            <select id="openaiModel" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                <option value="gpt-4o-mini">GPT-4o Mini</option>
+                                <option value="gpt-4o">GPT-4o</option>
+                                <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                            </select>
+                        </div>
+                        
+                        <button onclick="saveConfig()" class="w-full bg-primary-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors shadow-md">
+                            Save Configuration
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Execution Card -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Execute Workflow</h2>
+                    
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Start Row</label>
+                                <input type="number" id="startRow" value="201" min="1" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">End Row</label>
+                                <input type="number" id="endRow" value="300" min="1" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                            </div>
+                        </div>
+                        
+                        <button onclick="executeWorkflow()" id="executeBtn" class="w-full bg-gradient-to-r from-primary-600 to-primary-700 text-white px-6 py-3 rounded-lg font-semibold hover:from-primary-700 hover:to-primary-800 transition-all shadow-lg transform hover:scale-[1.02]">
+                            <span id="executeBtnText">Execute Workflow</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results Card -->
+                <div class="bg-white rounded-2xl shadow-lg p-6" id="resultsCard" style="display: none;">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Execution Results</h2>
+                    <div id="resultsContent" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <!-- Right Column: Status & Actions -->
+            <div class="space-y-6">
+                <!-- Connection Status Card -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Connection Status</h2>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <span class="text-sm font-medium text-gray-700">Google Sheets</span>
+                            <span id="statusSheets" class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-600">Not tested</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <span class="text-sm font-medium text-gray-700">Google Docs</span>
+                            <span id="statusDocs" class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-600">Not tested</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <span class="text-sm font-medium text-gray-700">OpenAI</span>
+                            <span id="statusOpenAI" class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-600">Not tested</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <span class="text-sm font-medium text-gray-700">SMTP</span>
+                            <span id="statusSMTP" class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-600">Not tested</span>
+                        </div>
+                    </div>
+                    
+                    <button onclick="testConnections()" class="w-full mt-4 bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-700 transition-colors">
+                        Test All Connections
+                    </button>
+                </div>
+
+                <!-- Quick Actions Card -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
+                    
+                    <div class="space-y-3">
+                        <button onclick="showTestEmailModal()" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                            Send Test Email
+                        </button>
+                        
+                        <button onclick="loadConfig()" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                            Load Configuration
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Email Modal -->
+    <div id="testEmailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4">
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4">Send Test Email</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">To Email</label>
+                    <input type="email" id="testEmailTo" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent" placeholder="test@example.com">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                    <input type="text" id="testEmailSubject" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent" placeholder="Test Email">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Body</label>
+                    <textarea id="testEmailBody" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent" placeholder="Test email body"></textarea>
+                </div>
+            </div>
+            
+            <div class="flex gap-3 mt-6">
+                <button onclick="closeTestEmailModal()" class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400 transition-colors">
+                    Cancel
+                </button>
+                <button onclick="sendTestEmail()" class="flex-1 bg-primary-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-700 transition-colors">
+                    Send
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load configuration on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadConfig();
+        });
+
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                
+                document.getElementById('sheetsDocId').value = config.google_sheets_document_id || '';
+                document.getElementById('sheetsSheetId').value = config.google_sheets_sheet_id || '';
+                document.getElementById('docsDocId').value = config.google_docs_document_id || '';
+                document.getElementById('smtpFromEmail').value = config.smtp_from_email || '';
+                document.getElementById('openaiModel').value = config.openai_model || 'gpt-4o-mini';
+            } catch (error) {
+                console.error('Error loading config:', error);
+                showNotification('Error loading configuration', 'error');
+            }
+        }
+
+        async function saveConfig() {
+            const config = {
+                google_sheets_document_id: document.getElementById('sheetsDocId').value,
+                google_sheets_sheet_id: document.getElementById('sheetsSheetId').value,
+                google_docs_document_id: document.getElementById('docsDocId').value,
+                smtp_from_email: document.getElementById('smtpFromEmail').value,
+                openai_model: document.getElementById('openaiModel').value,
+            };
+
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+
+                if (response.ok) {
+                    showNotification('Configuration saved successfully', 'success');
+                } else {
+                    throw new Error('Failed to save configuration');
+                }
+            } catch (error) {
+                console.error('Error saving config:', error);
+                showNotification('Error saving configuration', 'error');
+            }
+        }
+
+        async function executeWorkflow() {
+            const startRow = parseInt(document.getElementById('startRow').value);
+            const endRow = parseInt(document.getElementById('endRow').value);
+            
+            if (startRow > endRow) {
+                showNotification('Start row must be less than or equal to end row', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('executeBtn');
+            const btnText = document.getElementById('executeBtnText');
+            
+            btn.disabled = true;
+            btnText.innerHTML = '<span class="inline-block animate-spin mr-2">⏳</span> Executing...';
+            
+            try {
+                const response = await fetch('/api/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ startRow, endRow })
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showNotification(result.message, 'success');
+                    displayResults(result.results);
+                } else {
+                    showNotification(result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error executing workflow:', error);
+                showNotification('Error executing workflow', 'error');
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = 'Execute Workflow';
+            }
+        }
+
+        function displayResults(results) {
+            const card = document.getElementById('resultsCard');
+            const content = document.getElementById('resultsContent');
+            
+            card.style.display = 'block';
+            
+            content.innerHTML = `
+                <div class="grid grid-cols-3 gap-4 mb-4">
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <div class="text-2xl font-bold text-green-600">${results.sent}</div>
+                        <div class="text-sm text-gray-600">Emails Sent</div>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <div class="text-2xl font-bold text-blue-600">${results.processed}</div>
+                        <div class="text-sm text-gray-600">Rows Processed</div>
+                    </div>
+                    <div class="bg-yellow-50 p-4 rounded-lg">
+                        <div class="text-2xl font-bold text-yellow-600">${results.skipped}</div>
+                        <div class="text-sm text-gray-600">Skipped</div>
+                    </div>
+                </div>
+                
+                ${results.errors.length > 0 ? `
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-red-800 mb-2">Errors:</h4>
+                        <ul class="list-disc list-inside text-sm text-red-600">
+                            ${results.errors.map(e => `<li>${e}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+                
+                ${results.details.length > 0 ? `
+                    <div class="mt-4">
+                        <h4 class="font-semibold text-gray-800 mb-2">Details:</h4>
+                        <div class="max-h-64 overflow-y-auto space-y-1">
+                            ${results.details.map(d => `
+                                <div class="text-sm p-2 bg-gray-50 rounded">
+                                    Row ${d.row}: ${d.status} ${d.to ? `→ ${d.to}` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        async function testConnections() {
+            const services = ['google_sheets', 'google_docs', 'openai', 'smtp'];
+            
+            for (const service of services) {
+                updateStatus(service, 'testing');
+            }
+
+            try {
+                const response = await fetch('/api/validate-connection', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ service: 'all' })
+                });
+
+                const results = await response.json();
+                
+                Object.keys(results).forEach(service => {
+                    const result = results[service];
+                    if (result.status === 'success') {
+                        updateStatus(service, 'success');
+                    } else {
+                        updateStatus(service, 'error', result.message);
+                    }
+                });
+            } catch (error) {
+                console.error('Error testing connections:', error);
+                showNotification('Error testing connections', 'error');
+            }
+        }
+
+        function updateStatus(service, status, message = '') {
+            const element = document.getElementById(`status${service.charAt(0).toUpperCase() + service.slice(1).replace('_', '')}`);
+            
+            if (status === 'testing') {
+                element.textContent = 'Testing...';
+                element.className = 'px-3 py-1 rounded-full text-xs font-semibold bg-yellow-200 text-yellow-800';
+            } else if (status === 'success') {
+                element.textContent = 'Connected';
+                element.className = 'px-3 py-1 rounded-full text-xs font-semibold bg-green-200 text-green-800';
+            } else if (status === 'error') {
+                element.textContent = 'Error';
+                element.className = 'px-3 py-1 rounded-full text-xs font-semibold bg-red-200 text-red-800';
+                if (message) {
+                    element.title = message;
+                }
+            } else {
+                element.textContent = 'Not tested';
+                element.className = 'px-3 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-600';
+            }
+        }
+
+        function showTestEmailModal() {
+            document.getElementById('testEmailModal').classList.remove('hidden');
+            document.getElementById('testEmailModal').classList.add('flex');
+        }
+
+        function closeTestEmailModal() {
+            document.getElementById('testEmailModal').classList.add('hidden');
+            document.getElementById('testEmailModal').classList.remove('flex');
+        }
+
+        async function sendTestEmail() {
+            const to = document.getElementById('testEmailTo').value;
+            const subject = document.getElementById('testEmailSubject').value;
+            const body = document.getElementById('testEmailBody').value;
+
+            if (!to) {
+                showNotification('Please enter a recipient email', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/test-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ to, subject, body })
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showNotification('Test email sent successfully', 'success');
+                    closeTestEmailModal();
+                } else {
+                    showNotification(result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error sending test email:', error);
+                showNotification('Error sending test email', 'error');
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg z-50 transform transition-all ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateY(-20px)';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
+
